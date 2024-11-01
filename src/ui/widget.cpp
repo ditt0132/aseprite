@@ -27,7 +27,6 @@
 #include "ui/load_layout_event.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/move_region.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
@@ -1605,6 +1604,11 @@ bool Widget::onProcessMessage(Message* msg)
         return true;
       }
       break;
+    case kCallbackMessage: {
+      CallbackMessage* callback = static_cast<CallbackMessage*>(msg);
+      callback->call();
+      return true;
+    }
 
   }
 

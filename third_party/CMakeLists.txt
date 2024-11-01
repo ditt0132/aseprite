@@ -58,9 +58,16 @@ if(NOT USE_SHARED_TINYXML)
   add_subdirectory(tinyxml2)
 endif()
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as shared library")
+set(BUILD_STATIC_LIBS ON CACHE BOOL "build as static library")
+set(LINK_CRT_STATIC_LIBS OFF CACHE BOOL "link CRT static library")
+set(BUILD_DEMO OFF CACHE BOOL "build demo binary")
+add_subdirectory(TinyEXIF)
+
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(BUILD_CURL_EXE OFF CACHE BOOL "Set to ON to build curl executable.")
+  set(CURL_DISABLE_TESTS ON CACHE BOOL "Disable Curl tests")
 
   add_subdirectory(curl)
 endif()
@@ -80,6 +87,11 @@ if(NOT USE_SHARED_FREETYPE AND NOT LAF_BACKEND STREQUAL "skia")
   if(UNIX)
     target_include_directories(freetype BEFORE PUBLIC
       ${CMAKE_CURRENT_BINARY_DIR}/freetype2/include)
+  endif()
+
+  if(HARFBUZZ_FOUND)
+    target_link_libraries(freetype PRIVATE ${HARFBUZZ_LIBRARIES})
+    target_include_directories(freetype PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
   endif()
 
   if(NOT USE_SHARED_LIBPNG)
@@ -198,17 +210,10 @@ if(ENABLE_SCRIPTING)
     target_compile_definitions(lua PUBLIC LUA_USE_LINUX=1)
   endif()
 
-  # Compile Lua as C++ to control errors with exceptions and have
-  # stack unwinding (i.e. calling destructors correctly).
-  if(MSVC)
-    target_compile_options(lua PRIVATE -TP)
-    target_compile_options(lualib PRIVATE -TP)
-    target_compile_options(lauxlib PRIVATE -TP)
-  else()
-    target_compile_options(lua PRIVATE -xc++)
-    target_compile_options(lualib PRIVATE -xc++)
-    target_compile_options(lauxlib PRIVATE -xc++)
-  endif()
+  # Compile Lua C files as C++ to control errors with exceptions and
+  # have stack unwinding (i.e. calling destructors correctly).
+  file(GLOB all_lua_source_files lua/*.c)
+  set_source_files_properties(${all_lua_source_files} PROPERTIES LANGUAGE CXX)
 
   target_compile_definitions(lua PUBLIC LUA_FLOORN2I=F2Ifloor)
   target_compile_definitions(lualib PRIVATE HAVE_SYSTEM)
