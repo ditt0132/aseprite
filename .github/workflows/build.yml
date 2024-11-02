@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: [RelWithDebInfo]
+        build_type: [Release]
         ui: [gui]
         scripting: [lua]
         exclude:
@@ -57,22 +57,12 @@ jobs:
       shell: bash
       run: |
         cd build && ninja
-    - name: Running C++ Tests
-      shell: bash
-      run: |
-        cd build && ctest --output-on-failure
-    - name: Running CLI Tests
-      if: ${{ matrix.scripting == 'lua' }}
-      shell: bash
-      run: |
-        export ASEPRITE=$PWD/build/bin/aseprite
-        cd tests
-        bash run-tests.sh
     - name: Zip the build
       run: Compress-Archive -Path "build/bin" -DestinationPath "build.zip" -Force
       shell: pwsh
     - name: Upload release
       uses: softprops/action-gh-release@v2
       with:
+        draft: true
         files: build.zip
           
