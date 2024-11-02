@@ -69,7 +69,8 @@ jobs:
         cd tests
         bash run-tests.sh
     - name: Zip the build
-      run: zip -r build.zip build/bin
+      run: Compress-Archive -Path "build/bin" -DestinationPath "build.zip" -Force
+      shell: pwsh
     - name: Upload release
       uses: softprops/action-gh-release@v2
       with:
