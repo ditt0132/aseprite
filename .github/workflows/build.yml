@@ -58,7 +58,7 @@ jobs:
       run: |
         cd build && ninja
     - name: Zip the build
-      run: Compress-Archive -Path "build" -DestinationPath "build.zip" -Force
+      run: Compress-Archive -Path "." -DestinationPath "build.zip" -Force
       shell: pwsh
     - name: Get tag name
       run: echo "commit_hash=${GITHUB_SHA::6}" >> $GITHUB_ENV
